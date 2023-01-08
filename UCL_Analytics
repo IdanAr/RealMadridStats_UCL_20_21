@@ -1,0 +1,210 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[275]:
+
+
+import matplotlib as plt
+import seaborn as sb
+
+
+# In[168]:
+
+
+import pandas as pd
+
+
+df_defending =  pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/defending.csv")
+df_key_stats =  pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/key_stats.csv")
+df_attacking =  pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/attacking.csv")
+df_goalkeeping = pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/goalkeeping.csv")
+df_disciplinary = pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/disciplinary.csv")
+df_goals = pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/goals.csv")
+df_attempts = pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/attempts.csv")
+df_distribution = pd.read_csv("C:/users/idan/desktop/Idan/Python/untitled Folder/data/distribution.csv")
+
+
+# In[169]:
+
+
+df = {'df_defending' : df_defending,
+'df_key_stats' : df_key_stats,
+'df_attacking' : df_attacking,
+'df_goalkeeping' : df_goalkeeping, 
+'df_disciplinary' : df_disciplinary, 
+'df_goals' : df_goals,
+'df_attempts' : df_attempts,
+'df_distribution' : df_distribution}
+
+
+# In[170]:
+
+
+for x,y in df.items():
+    print(x)
+    display(y.head())
+
+
+# In[171]:
+
+
+# CHECK IF THERE ARE MISSING VALUES
+
+for m,n in df.items():
+    print(m)
+    print(n.isnull().sum())
+
+
+# In[172]:
+
+
+# AS THIS PROJECT REFFERING REAL-MADRID FOOTBALL CLUB, I'LL EXTRACT ONLY REAL-MADRID DATA USING LOC
+
+df_defending_RM = df_defending.loc[df_defending["club"] == "Real Madrid"].drop("serial", axis = 1 )
+df_key_stats_RM = df_key_stats.loc[df_key_stats["club"] == "Real Madrid"]
+df_attacking_RM = df_attacking.loc[df_attacking["club"] == "Real Madrid"].drop("serial", axis = 1 )
+df_goalkeeping_RM = df_goalkeeping.loc[df_goalkeeping["club"] == "Real Madrid"].drop("serial", axis = 1 )
+df_disciplinary_RM = df_disciplinary.loc[df_disciplinary["club"] == "Real Madrid"].drop("serial", axis = 1 )
+df_goals_RM = df_goals.loc[df_goals["club"] == "Real Madrid"].drop(["serial", "match_played"], axis = 1 )
+df_attempts_RM = df_attempts.loc[df_attempts["club"] == "Real Madrid"].drop("serial", axis = 1 )
+df_distribution_RM = df_distribution.loc[df_distribution["club"] == "Real Madrid"].drop("serial", axis = 1 )
+
+
+# In[173]:
+
+
+df_RM = {"df_defending_RM":df_defending_RM,
+"df_key_stats_RM":df_key_stats_RM,
+"df_attacking_RM": df_attacking_RM,
+"df_goalkeeping_RM": df_goalkeeping_RM, 
+"df_disciplinary_RM": df_disciplinary_RM,
+"df_goals_RM": df_goals_RM,
+"df_attempts_RM": df_attempts_RM,
+"df_distribution_RM": df_distribution_RM}
+
+for k,q in df_RM.items():
+    print(k)
+    display(q)
+
+
+# In[261]:
+
+
+# MERGING ALL DATASETS INTO VARIABLE
+
+df = df_defending_RM.merge(df_key_stats_RM, on = ["player_name", "club", "position", "match_played"], how ="outer").merge(df_attacking_RM, on = ["player_name", "club", "position", "match_played", "assists"], how="outer").merge(df_goalkeeping_RM, on = ["player_name", "club", "position", "match_played"], how = "outer").merge(df_disciplinary_RM, on = ["player_name", "club", "position", "match_played", "minutes_played"], how="outer").merge(df_goals_RM, on = ["player_name", "club", "position", "goals"], how="outer").merge(df_attempts_RM, on = ["player_name", "club", "position", "match_played"], how="outer").merge(df_distribution_RM, on = ["player_name", "club", "position", "match_played"], how="outer")
+
+
+# In[254]:
+
+
+df = df.isnull()
+
+
+# In[237]:
+
+
+# AS IT SEEMS, THERE ARE MISSING DATA POINTS (WHICH MAKE SENSE BECAUSE EACH PLAYER HAVE IS OWN POSITION.
+# FOR EXAMPLE - GOALKEEPER HAVE IS OWN DATASET)
+
+
+# In[258]:
+
+
+sb.heatmap(df, cbar=True)
+
+
+# In[262]:
+
+
+df = df.fillna(0)
+print(df)
+
+
+# In[263]:
+
+
+# df = df.isnull()
+df = df.fillna(0)
+sb.heatmap(df, cbar=True)
+
+
+# In[265]:
+
+
+df.describe()
+
+
+# In[264]:
+
+
+df.info()
+
+
+# Finally, our dataset is completely ready and we can visualize it.
+
+# VISUALIZATION 1:
+
+# In[271]:
+
+
+# RELATIONSHIP BETWEEN TACKLES & WINNNG
+
+sb.set_style("whitegrid")
+sb.regplot(x = "tackles", y = "t_won", data = df, marker = "D", color = "r")
+
+
+# In[273]:
+
+
+# RELATIONSHIP BETWEEN DRIBBLES & LOSING
+
+sb.set_style("whitegrid")
+sb.regplot(x = "dribbles", y = "t_lost", data = df, marker = "D", color = "r")
+
+
+# 1. CLEARLY WHEN THERE ARE MORE TACKELS PERFORMED BY REAL-MADRID, MEANS MORE WINNING
+# 2. IT CAN BE CONDUCTED THAT THE RELATIONSHIP BETWEEN DRIBBLES & LOSING IS HAVE A LOW CONNECTION
+
+# VISUALIZATION 2:
+
+# In[277]:
+
+
+# GOAL SCORE
+
+goal_df = df[df["goals"] > 0]
+sb.barplot(y = "goals" , x = "player_name", data = goal_df)
+plt.pyplot.xticks(rotation = 60)
+
+
+# In[279]:
+
+
+# ASSISTS
+
+assists_df = df[df["assists"] > 0]
+sb.barplot(y = "assists" , x = "player_name", data = assists_df)
+plt.pyplot.xticks(rotation = 60)
+
+
+# OUT OF THE ABOVE VISUALIZATIONS, BENZEMA, VINI & MODRIC HAVE A HUGE IMPACT ON SCORING AND ASSISTING, AND THOSE SHOULD BE DEFINITELY HAVE TO BE VALUED FOR THAT.
+
+# VISUALIZATION 3:
+
+# In[281]:
+
+
+# GOAL KEEPING
+
+goal_keeper = df[df["position"] == "Goalkeeper"]
+goal_keeper = goal_keeper[["player_name", "saved_penalties", "punches made", "cleansheets", "conceded", "saved"]].set_index("player_name")
+sb.heatmap(goal_keeper, annot=True, linewidths=1, cmap="YlGnBu")
+plt.pyplot.show()
+
+
+# In[ ]:
+
+
+
+
